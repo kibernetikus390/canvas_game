@@ -104,9 +104,10 @@ function spawnEnemy()
     },1000)
 }
 
+let animationId;
 function animate()
 {
-    window.requestAnimationFrame(animate);
+    animationId = window.requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
     player.draw();
     projectiles.forEach(p => {
@@ -114,6 +115,11 @@ function animate()
     });
     enemies.forEach((e,eIndex)=>{
         e.update();
+        let dist = Math.hypot(player.x-e.x, player.y-e.y);
+        if(dist - e.radius - player.radius < HIT_RANGE)
+        {
+            window.cancelAnimationFrame(animationId);
+        }
         projectiles.forEach((p,pIndex)=>{
             let dist = Math.hypot(p.x-e.x, p.y-e.y)
             if(dist - e.radius - p.radius< HIT_RANGE)
