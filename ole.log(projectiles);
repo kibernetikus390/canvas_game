@@ -1,0 +1,35 @@
+[33mcommit 57f0b425bbea5f4af8c4facf598adfe02462023f[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Thu Feb 15 07:58:51 2024 +0000
+
+    0106 Detect collision on Enemy and Player
+
+[33mcommit c651a0cc41eba7431981106a133422f908f0cd20[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Thu Feb 15 07:49:15 2024 +0000
+
+    0105 Detect Collision on Enemy and Proj
+
+[33mcommit 2b1ada91cadd0c7229954353f02ef20e05c127a4[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Thu Feb 15 07:38:34 2024 +0000
+
+    0104 spawn enemies
+
+[33mcommit b3407423acfa72fb5a5973553c9767df9fc50297[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Wed Feb 14 13:21:58 2024 +0000
+
+    0103 shoot projectiles
+
+[33mcommit 2c4f8447cd644461ca5a7fafce23d9918a57054e[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Wed Feb 14 12:55:52 2024 +0000
+
+    0102
+
+[33mcommit ff061be83836a3c8a09eb3bfdc605cf6c5cc68ac[m
+Author: kibernetikus390 <naturaspira@gmail.com>
+Date:   Wed Feb 14 10:22:28 2024 +0000
+
+    01-01

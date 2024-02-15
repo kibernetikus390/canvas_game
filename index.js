@@ -110,8 +110,18 @@ function animate()
     animationId = window.requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
     player.draw();
-    projectiles.forEach(p => {
+    projectiles.forEach((p,pIndex) => {
        p.update(); 
+       //端に到達した球を削除
+       if(  p.x - p.radius < 0 ||
+            p.x - p.radius > canvas.width ||
+            p.y - p.radius < 0 ||
+            p.y - p.radius > canvas.height)
+       {
+            setTimeout(()=>{
+                projectiles.splice(pIndex,1);
+            }, 0);
+       }
     });
     enemies.forEach((e,eIndex)=>{
         e.update();
