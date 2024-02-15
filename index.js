@@ -228,7 +228,7 @@ function animate()
     }
 }
 
-window.addEventListener("click",(event)=>{
+canvas.addEventListener("click",(event)=>{
     let angle = Math.atan2(event.clientY - y, event.clientX - x);
     let velocity = {
         x:Math.cos(angle)*PROJ_SPEED,
