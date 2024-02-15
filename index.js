@@ -197,6 +197,9 @@ function animate()
             window.cancelAnimationFrame(animationId);
             clearInterval(intervalId);
             modalRestart.style.display = "block";
+            gsap.fromTo("#MODAL_RESTART", 
+            {scale:0.8, opacity:0},
+            {scale:1, opacity:1, ease:"expo"});
             modalScoreEl.innerHTML = score;
         }
         for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
@@ -247,12 +250,28 @@ buttonRestart.addEventListener("click",()=>{
     Init();
     animate();
     spawnEnemy();
-    modalRestart.style.display = "none";
+    gsap.to("#MODAL_RESTART",{
+        opacity: 0,
+        scale:0.8,
+        duration:0.3,
+        ease: "expo.in",
+        onComplete: ()=>{
+            modalRestart.style.display = "none";
+        }
+    });
 });
 
 buttonStart.addEventListener("click",()=>{
     Init();
     animate();
     spawnEnemy();
-    modalStart.style.display = "none";
+    gsap.to("#MODAL_START",{
+        opacity: 0,
+        scale:0.8,
+        duration:0.3,
+        ease: "expo.in",
+        onComplete: ()=>{
+            modalStart.style.display = "none";
+        }
+    });
 });
