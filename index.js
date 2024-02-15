@@ -5,6 +5,7 @@ const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
 const PROJ_SPEED = 3;
+const HIT_RANGE = 0.5;
 
 class Player{
     constructor(x,y,radius,color){
@@ -111,8 +112,19 @@ function animate()
     projectiles.forEach(p => {
        p.update(); 
     });
-    enemies.forEach(enemy=>{
-        enemy.update();
+    enemies.forEach((e,eIndex)=>{
+        e.update();
+        projectiles.forEach((p,pIndex)=>{
+            let dist = Math.hypot(p.x-e.x, p.y-e.y)
+            if(dist - e.radius - p.radius< HIT_RANGE)
+            {
+                //ちらつきを防ぐため、次のフレームまで削除を待つ
+                setTimeout(()=>{
+                   enemies.splice(eIndex,1);
+                   projectiles.splice(pIndex,1);
+                }, 0);
+            }
+        });
     });
 }
 
