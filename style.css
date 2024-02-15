@@ -1,5 +1,7 @@
 body {
     margin : 0;
+    font-family: sans-serif;
+    background-color: black;
 }
 #SCORE{
     position: absolute;
@@ -9,8 +11,10 @@ body {
     font-size: 16px;
     user-select: none;
 }
-#MODAL{
+#MODAL_RESTART{
     display: none;
+}
+#MODAL_RESTART, #MODAL_START{
     position: absolute;
     background-color: white;
     top:50%;
@@ -21,4 +25,12 @@ body {
     width:100%;
     text-align: center;
     border-radius:5px;
+}
+#buttonRestart{
+    margin-top: 12px; 
+    background-color: blue; 
+    border: none; 
+    color:white; 
+    padding:8px 16px;
+    cursor: pointer;
 }

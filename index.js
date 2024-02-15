@@ -2,9 +2,11 @@ const canvas = document.querySelector("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const scoreEl = document.querySelector("#scoreText");
-const modalEl = document.querySelector("#MODAL");
+const modalRestart = document.querySelector("#MODAL_RESTART");
+const modalStart = document.querySelector("#MODAL_START");
 const modalScoreEl = document.querySelector("#modalScore");
-const buttonEl = document.querySelector("#buttonRestart");
+const buttonRestart = document.querySelector("#buttonRestart");
+const buttonStart = document.querySelector("#buttonStart");
 const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -123,6 +125,7 @@ function Init(){
     projectiles = [];
     particles = [];
     score = 0;
+    scoreEl.innerHTML = 0;
 }
 
 function spawnEnemy()
@@ -193,7 +196,7 @@ function animate()
         {
             window.cancelAnimationFrame(animationId);
             clearInterval(intervalId);
-            modalEl.style.display = "block";
+            modalRestart.style.display = "block";
             modalScoreEl.innerHTML = score;
         }
         for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
@@ -240,12 +243,16 @@ function UpdateScore(add)
     scoreEl.innerHTML = score
 }
 
-buttonEl.addEventListener("click",()=>{
+buttonRestart.addEventListener("click",()=>{
     Init();
     animate();
     spawnEnemy();
-    modalEl.style.display = "none";
+    modalRestart.style.display = "none";
 });
 
-animate();
-spawnEnemy();
+buttonStart.addEventListener("click",()=>{
+    Init();
+    animate();
+    spawnEnemy();
+    modalStart.style.display = "none";
+});
