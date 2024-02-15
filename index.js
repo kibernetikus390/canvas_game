@@ -8,6 +8,7 @@ const PROJ_SPEED = 6;
 const HIT_RANGE = 0.5;
 const PLAYER_COLOR = "white";
 const PLAYER_SIZE = 10;
+const FRICTION = 0.99;
 
 class Player{
     constructor(x,y,radius,color){
@@ -72,11 +73,42 @@ class Enemy{
         this.y = this.y + this.velocity.y;   
     }
 };
+class Particle{
+    constructor(x,y,r,c,v)
+    {
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+        this.color = c;
+        this.velocity = v;
+        this.alpha = Math.random()*2;
+    }
+    draw()
+    {
+        c.save();
+        c.globalAlpha = this.alpha;
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, 360, false);
+        c.fillStyle = this.color;
+        c.fill();
+        c.restore();
+    }
+    update()
+    {
+        this.draw();
+        this.velocity.x = this.velocity.x * FRICTION;
+        this.velocity.y = this.velocity.y * FRICTION;
+        this.x = this.x + this.velocity.x;
+        this.y = this.y + this.velocity.y;
+        this.alpha -= 0.02;
+    }
+};
 
 const player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
 player.draw();
 const projectiles = [];
 const enemies = [];
+const particles = [];
 
 function spawnEnemy()
 {
@@ -113,6 +145,15 @@ function animate()
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.draw();
+    particles.forEach((p,index)=>{
+        if(p.alpha < 0)
+        {
+            particles.splice(index,1);
+        }else
+        {
+            p.update();
+        }
+    });
     projectiles.forEach((p,pIndex) => {
        p.update(); 
        //端に到達した球を削除
@@ -137,6 +178,10 @@ function animate()
             let dist = Math.hypot(p.x-e.x, p.y-e.y)
             if(dist - e.radius - p.radius< HIT_RANGE)
             {
+                for(let i = 0; i < e.radius*2; i++)
+                {
+                    particles.push(new Particle(p.x, p.y, Math.random()*2, e.color, {x:(Math.random()-0.5)*Math.random()*8, y:(Math.random()-0.5)*Math.random()*8}));
+                }
                 if(e.radius - 10 > 10)
                 {
                     gsap.to(e,{radius:e.radius - 10});
