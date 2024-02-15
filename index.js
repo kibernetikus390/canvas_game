@@ -1,6 +1,7 @@
 const canvas = document.querySelector("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+const scoreEl = document.querySelector("#scoreText");
 const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -9,6 +10,7 @@ const HIT_RANGE = 0.5;
 const PLAYER_COLOR = "white";
 const PLAYER_SIZE = 10;
 const FRICTION = 0.99;
+var score = 0;
 
 class Player{
     constructor(x,y,radius,color){
@@ -184,12 +186,14 @@ function animate()
                 }
                 if(e.radius - 10 > 10)
                 {
+                    UpdateScore(50);
                     gsap.to(e,{radius:e.radius - 10});
                     setTimeout(()=>{
                        projectiles.splice(pIndex,1);
                     }, 0);
                 }else
                 {
+                    UpdateScore(100);
                     //ちらつきを防ぐため、次のフレームまで削除を待つ
                     setTimeout(()=>{
                     enemies.splice(eIndex,1);
@@ -212,6 +216,12 @@ window.addEventListener("click",(event)=>{
         canvas.height / 2,
         5, PLAYER_COLOR, velocity));
 });
+
+function UpdateScore(add)
+{
+    score += add;
+    scoreEl.innerHTML = score
+}
 
 animate();
 spawnEnemy();
