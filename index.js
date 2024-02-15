@@ -147,7 +147,9 @@ function animate()
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.draw();
-    particles.forEach((p,index)=>{
+    for(let index = particles.length-1; index >= 0; index--)
+    {
+        let p = particles[index];
         if(p.alpha < 0)
         {
             particles.splice(index,1);
@@ -155,28 +157,32 @@ function animate()
         {
             p.update();
         }
-    });
-    projectiles.forEach((p,pIndex) => {
-       p.update(); 
-       //端に到達した球を削除
-       if(  p.x - p.radius < 0 ||
+    }
+    for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
+    {
+        let p = projectiles[pIndex];
+        p.update(); 
+        //端に到達した球を削除
+        if( p.x - p.radius < 0 ||
             p.x - p.radius > canvas.width ||
             p.y - p.radius < 0 ||
             p.y - p.radius > canvas.height)
-       {
-            setTimeout(()=>{
-                projectiles.splice(pIndex,1);
-            }, 0);
-       }
-    });
-    enemies.forEach((e,eIndex)=>{
+        {
+            projectiles.splice(pIndex,1);
+        }
+    }
+    for(let eIndex = enemies.length-1; eIndex >= 0; eIndex--)
+    {
+        let e = enemies[eIndex];
         e.update();
         let dist = Math.hypot(player.x-e.x, player.y-e.y);
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
             window.cancelAnimationFrame(animationId);
         }
-        projectiles.forEach((p,pIndex)=>{
+        for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
+        {
+            let p = projectiles[pIndex];
             let dist = Math.hypot(p.x-e.x, p.y-e.y)
             if(dist - e.radius - p.radius< HIT_RANGE)
             {
@@ -188,21 +194,16 @@ function animate()
                 {
                     UpdateScore(50);
                     gsap.to(e,{radius:e.radius - 10});
-                    setTimeout(()=>{
-                       projectiles.splice(pIndex,1);
-                    }, 0);
+                    projectiles.splice(pIndex,1);
                 }else
                 {
                     UpdateScore(100);
-                    //ちらつきを防ぐため、次のフレームまで削除を待つ
-                    setTimeout(()=>{
                     enemies.splice(eIndex,1);
                     projectiles.splice(pIndex,1);
-                    }, 0);
                 }
             }
-        });
-    });
+        }
+    }
 }
 
 window.addEventListener("click",(event)=>{
