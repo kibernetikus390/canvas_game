@@ -137,11 +137,20 @@ function animate()
             let dist = Math.hypot(p.x-e.x, p.y-e.y)
             if(dist - e.radius - p.radius< HIT_RANGE)
             {
-                //ちらつきを防ぐため、次のフレームまで削除を待つ
-                setTimeout(()=>{
-                   enemies.splice(eIndex,1);
-                   projectiles.splice(pIndex,1);
-                }, 0);
+                if(e.radius - 10 > 10)
+                {
+                    gsap.to(e,{radius:e.radius - 10});
+                    setTimeout(()=>{
+                       projectiles.splice(pIndex,1);
+                    }, 0);
+                }else
+                {
+                    //ちらつきを防ぐため、次のフレームまで削除を待つ
+                    setTimeout(()=>{
+                    enemies.splice(eIndex,1);
+                    projectiles.splice(pIndex,1);
+                    }, 0);
+                }
             }
         });
     });
