@@ -4,6 +4,7 @@ canvas.height = window.innerHeight;
 const scoreEl = document.querySelector("#scoreText");
 const modalEl = document.querySelector("#MODAL");
 const modalScoreEl = document.querySelector("#modalScore");
+const buttonEl = document.querySelector("#buttonRestart");
 const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -13,6 +14,8 @@ const PLAYER_COLOR = "white";
 const PLAYER_SIZE = 10;
 const FRICTION = 0.99;
 var score = 0;
+var animationId;
+var intervalId;
 
 class Player{
     constructor(x,y,radius,color){
@@ -108,15 +111,23 @@ class Particle{
     }
 };
 
-const player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
+var player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
 player.draw();
-const projectiles = [];
-const enemies = [];
-const particles = [];
+var projectiles = [];
+var enemies = [];
+var particles = [];
+
+function Init(){
+    player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
+    enemies = [];
+    projectiles = [];
+    particles = [];
+    score = 0;
+}
 
 function spawnEnemy()
 {
-    setInterval(()=>{
+    intervalId = setInterval(()=>{
         let radius = Math.random() * (30 - 4) + 4;
         
         let x,y;
@@ -142,7 +153,6 @@ function spawnEnemy()
     },1000)
 }
 
-let animationId;
 function animate()
 {
     animationId = window.requestAnimationFrame(animate);
@@ -182,6 +192,7 @@ function animate()
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
             window.cancelAnimationFrame(animationId);
+            clearInterval(intervalId);
             modalEl.style.display = "block";
             modalScoreEl.innerHTML = score;
         }
@@ -228,6 +239,13 @@ function UpdateScore(add)
     score += add;
     scoreEl.innerHTML = score
 }
+
+buttonEl.addEventListener("click",()=>{
+    Init();
+    animate();
+    spawnEnemy();
+    modalEl.style.display = "none";
+});
 
 animate();
 spawnEnemy();
