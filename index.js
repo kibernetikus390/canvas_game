@@ -2,6 +2,8 @@ const canvas = document.querySelector("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const scoreEl = document.querySelector("#scoreText");
+const modalEl = document.querySelector("#MODAL");
+const modalScoreEl = document.querySelector("#modalScore");
 const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -176,9 +178,12 @@ function animate()
         let e = enemies[eIndex];
         e.update();
         let dist = Math.hypot(player.x-e.x, player.y-e.y);
+        //ゲームオーバー
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
             window.cancelAnimationFrame(animationId);
+            modalEl.style.display = "block";
+            modalScoreEl.innerHTML = score;
         }
         for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
         {
