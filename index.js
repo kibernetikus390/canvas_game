@@ -14,10 +14,15 @@ const PROJ_SPEED = 6;
 const HIT_RANGE = 0.5;
 const PLAYER_COLOR = "white";
 const PLAYER_SIZE = 10;
+const PLAYER_SPEED = 0.5;
+const PLAYER_MAX_SPEED = 5;
+const PLAYER_MOVE_INTERVAL = 10;
 const FRICTION = 0.99;
+const keyPressSet = new Set();
 var score = 0;
 var animationId;
 var intervalId;
+var inputIntervalId;
 
 class Player{
     constructor(x,y,radius,color){
@@ -25,6 +30,7 @@ class Player{
         this.y = y;
         this.radius = radius;
         this.color = color;
+        this.velocity = {x:0,y:0};
     }
     
     draw()
@@ -33,6 +39,45 @@ class Player{
         c.arc(this.x, this.y, this.radius, 0, 360, false);
         c.fillStyle = this.color;
         c.fill();
+    }
+
+    update()
+    {
+        //速度上限
+        let Hypotenuse = Math.sqrt(this.velocity.x * this.velocity.x  + this.velocity.y * this.velocity.y);
+        if(Hypotenuse > PLAYER_MAX_SPEED)
+        {
+            console.log(Hypotenuse);
+            this.velocity.x = this.velocity.x / Hypotenuse * PLAYER_MAX_SPEED;
+            this.velocity.y = this.velocity.y / Hypotenuse * PLAYER_MAX_SPEED;
+        }
+
+        //速度抵抗
+        this.velocity.x *= FRICTION;
+        this.velocity.y *= FRICTION;
+
+        //境界制限
+        if( this.x - this.radius + this.velocity.x >= 0 &&
+            this.x + this.radius + this.velocity.x <= canvas.width)
+        {
+            this.x += this.velocity.x;
+        }
+        else
+        {
+            this.velocity.x = 0;
+        }
+        if( this.y - this.radius + this.velocity.y >= 0 &&
+            this.y + this.radius + this.velocity.y <= canvas.height)
+        {
+            this.y += this.velocity.y;
+        }
+        else
+        {
+            this.velocity.y = 0;
+        }
+
+        //描画
+        this.draw();
     }
 };
 
@@ -126,7 +171,15 @@ function Init(){
     particles = [];
     score = 0;
     scoreEl.innerHTML = 0;
+    keyPressSet.clear();
+    inputIntervalId = setInterval(()=>{
+        if(keyPressSet.has("ArrowRight") || keyPressSet.has("d")) player.velocity.x += PLAYER_SPEED;
+        if(keyPressSet.has("ArrowLeft")  || keyPressSet.has("a")) player.velocity.x -= PLAYER_SPEED;
+        if(keyPressSet.has("ArrowUp")    || keyPressSet.has("w")) player.velocity.y -= PLAYER_SPEED;
+        if(keyPressSet.has("ArrowDown")  || keyPressSet.has("s")) player.velocity.y += PLAYER_SPEED;
+    },PLAYER_MOVE_INTERVAL);
 }
+
 
 function spawnEnemy()
 {
@@ -161,7 +214,7 @@ function animate()
     animationId = window.requestAnimationFrame(animate);
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
-    player.draw();
+    player.update();
     for(let index = particles.length-1; index >= 0; index--)
     {
         let p = particles[index];
@@ -195,6 +248,7 @@ function animate()
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
             window.cancelAnimationFrame(animationId);
+            clearInterval(inputIntervalId);
             clearInterval(intervalId);
             modalRestart.style.display = "block";
             gsap.fromTo("#MODAL_RESTART", 
@@ -229,14 +283,14 @@ function animate()
 }
 
 canvas.addEventListener("click",(event)=>{
-    let angle = Math.atan2(event.clientY - y, event.clientX - x);
+    let angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
     let velocity = {
         x:Math.cos(angle)*PROJ_SPEED,
         y:Math.sin(angle)*PROJ_SPEED
     };
     projectiles.push(new Projectile(
-        canvas.width / 2,
-        canvas.height / 2,
+        player.x,
+        player.y,
         5, PLAYER_COLOR, velocity));
 });
 
@@ -274,4 +328,11 @@ buttonStart.addEventListener("click",()=>{
             modalStart.style.display = "none";
         }
     });
+});
+
+window.addEventListener("keyup",(event)=>{
+    keyPressSet.delete(event.key);
+});
+window.addEventListener("keydown",(event)=>{
+    keyPressSet.add(event.key);
 });
