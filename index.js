@@ -18,6 +18,7 @@ const PLAYER_SPEED = 0.5;
 const PLAYER_MAX_SPEED = 5;
 const PLAYER_MOVE_INTERVAL = 10;
 const FRICTION = 0.99;
+const FRICTION_PLAYER = 0.9;
 const SPIN_RADIUS = 30;
 const SPIN_SPEED  = 0.1;
 const keyPressSet = new Set();
@@ -55,8 +56,8 @@ class Player{
         }
 
         //速度抵抗
-        this.velocity.x *= FRICTION;
-        this.velocity.y *= FRICTION;
+        this.velocity.x *= FRICTION_PLAYER;
+        this.velocity.y *= FRICTION_PLAYER;
 
         //境界制限
         if( this.x - this.radius + this.velocity.x >= 0 &&
@@ -117,15 +118,13 @@ class Enemy{
         this.radians = 0;
         this.center = {x:x,y:y};
         this.type = "liner";
-        if(Math.random() < 0.5)
-        {
+        this.invert = (Math.random() < 0.5) ? false : true;
+        if(Math.random() < 0.5){
             this.type = "homing";
-            if(Math.random() < 0.5)
-            {
+            if(Math.random() < 0.5){
                 this.type = "spinning";
-                if(Math.random() < 0.5)
-                {
-                    this.type = "spinning_inv";
+                if(Math.random() < 0.5){
+                    this.type = "spinning_homing";
                 }
             }
         }
@@ -139,22 +138,36 @@ class Enemy{
     }
     update()
     {
-        if(this.type == "spinning" || this.type == "spinning_inv")
+        if(this.type == "spinning")
         {
-            this.radians = this.radians + ((this.type == "spinning") ? SPIN_SPEED : -SPIN_SPEED);
+            this.radians = this.radians + ((this.invert) ? SPIN_SPEED : -SPIN_SPEED);
             this.center.x += this.velocity.x;
             this.center.y += this.velocity.y;
             this.x = this.center.x + Math.cos(this.radians) * SPIN_RADIUS;
             this.y = this.center.y + Math.sin(this.radians) * SPIN_RADIUS;
         }
-        if(this.type == "homing")
+        else if(this.type == "spinning_homing")
+        {
+            let angle = Math.atan2(player.y-this.y, player.x-this.x);
+            this.radians = this.radians + ((this.invert) ? SPIN_SPEED : -SPIN_SPEED);
+            this.center.x += Math.cos(angle);
+            this.center.y += Math.sin(angle);
+            this.x = this.center.x + Math.cos(this.radians) * SPIN_RADIUS;
+            this.y = this.center.y + Math.sin(this.radians) * SPIN_RADIUS;
+        }
+        else if(this.type == "homing")
         {
             let angle = Math.atan2(player.y-this.y, player.x-this.x);
             this.velocity.x = Math.cos(angle);
             this.velocity.y = Math.sin(angle);
+            this.x = this.x + this.velocity.x;
+            this.y = this.y + this.velocity.y;   
         }
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;   
+        else
+        {
+            this.x = this.x + this.velocity.x;
+            this.y = this.y + this.velocity.y;   
+        }
         this.draw();
     }
 };
