@@ -112,6 +112,11 @@ class Enemy{
         this.radius = r;
         this.color = c;
         this.velocity = v;
+        this.type = "liner";
+        if(Math.random() < 0.5)
+        {
+            this.type = "homing";
+        }
     }
     draw()
     {
@@ -122,9 +127,15 @@ class Enemy{
     }
     update()
     {
-        this.draw();
+        if(this.type == "homing")
+        {
+            let angle = Math.atan2(player.y-this.y, player.x-this.x);
+            this.velocity.x = Math.cos(angle);
+            this.velocity.y = Math.sin(angle);
+        }
         this.x = this.x + this.velocity.x;
         this.y = this.y + this.velocity.y;   
+        this.draw();
     }
 };
 class Particle{
