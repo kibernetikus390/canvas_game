@@ -15,198 +15,67 @@ const HIT_RANGE = 0.5;
 const PLAYER_COLOR = "white";
 const PLAYER_SIZE = 10;
 const PLAYER_SPEED = 0.5;
-const PLAYER_MAX_SPEED = 5;
 const PLAYER_MOVE_INTERVAL = 10;
-const FRICTION = 0.99;
-const FRICTION_PLAYER = 0.9;
-const SPIN_RADIUS = 30;
-const SPIN_SPEED  = 0.1;
 const keyPressSet = new Set();
+const POWERUP_SPEED = 1;
 var score = 0;
 var animationId;
 var intervalId;
 var inputIntervalId;
+var spawnPowerUpId;
+var powerUpId;
 
-class Player{
-    constructor(x,y,radius,color){
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.color = color;
-        this.velocity = {x:0,y:0};
-    }
-    
-    draw()
-    {
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, 360, false);
-        c.fillStyle = this.color;
-        c.fill();
-    }
+export {c, player};
+import Player from "./modules/player.js";
+import Projectile from "./modules/projectile.js";
+import Enemy from "./modules/enemy.js";
+import Particle from "./modules/particle.js";
 
-    update()
+class PowerUp{
+    constructor(position, velocity)
     {
-        //速度上限
-        let Hypotenuse = Math.sqrt(this.velocity.x * this.velocity.x  + this.velocity.y * this.velocity.y);
-        if(Hypotenuse > PLAYER_MAX_SPEED)
-        {
-            console.log(Hypotenuse);
-            this.velocity.x = this.velocity.x / Hypotenuse * PLAYER_MAX_SPEED;
-            this.velocity.y = this.velocity.y / Hypotenuse * PLAYER_MAX_SPEED;
-        }
-
-        //速度抵抗
-        this.velocity.x *= FRICTION_PLAYER;
-        this.velocity.y *= FRICTION_PLAYER;
-
-        //境界制限
-        if( this.x - this.radius + this.velocity.x >= 0 &&
-            this.x + this.radius + this.velocity.x <= canvas.width)
-        {
-            this.x += this.velocity.x;
-        }
-        else
-        {
-            this.velocity.x = 0;
-        }
-        if( this.y - this.radius + this.velocity.y >= 0 &&
-            this.y + this.radius + this.velocity.y <= canvas.height)
-        {
-            this.y += this.velocity.y;
-        }
-        else
-        {
-            this.velocity.y = 0;
-        }
-
-        //描画
-        this.draw();
-    }
-};
-
-class Projectile{
-    constructor(x,y,r,c,v)
-    {
-        this.x = x;
-        this.y = y;
-        this.radius = r;
-        this.color = c;
-        this.velocity = v;
-    }
-    draw()
-    {
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, 360, false);
-        c.fillStyle = this.color;
-        c.fill();
-    }
-    update()
-    {
-        this.draw();
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;   
-    }
-};
-class Enemy{
-    constructor(x,y,r,c,v)
-    {
-        this.x = x;
-        this.y = y;
-        this.radius = r;
-        this.color = c;
-        this.velocity = v;
+        this.position = position;
+        this.velocity = velocity;
+        this.image = new Image();
+        this.image.src = "./img/lightningBolt.png";
+        this.alpha = 1;
         this.radians = 0;
-        this.center = {x:x,y:y};
-        this.type = "liner";
-        this.invert = (Math.random() < 0.5) ? false : true;
-        if(Math.random() < 0.5){
-            this.type = "homing";
-            if(Math.random() < 0.5){
-                this.type = "spinning";
-                if(Math.random() < 0.5){
-                    this.type = "spinning_homing";
-                }
-            }
-        }
-    }
-    draw()
-    {
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, 360, false);
-        c.fillStyle = this.color;
-        c.fill();
-    }
-    update()
-    {
-        if(this.type == "spinning")
-        {
-            this.radians = this.radians + ((this.invert) ? SPIN_SPEED : -SPIN_SPEED);
-            this.center.x += this.velocity.x;
-            this.center.y += this.velocity.y;
-            this.x = this.center.x + Math.cos(this.radians) * SPIN_RADIUS;
-            this.y = this.center.y + Math.sin(this.radians) * SPIN_RADIUS;
-        }
-        else if(this.type == "spinning_homing")
-        {
-            let angle = Math.atan2(player.y-this.y, player.x-this.x);
-            this.radians = this.radians + ((this.invert) ? SPIN_SPEED : -SPIN_SPEED);
-            this.center.x += Math.cos(angle);
-            this.center.y += Math.sin(angle);
-            this.x = this.center.x + Math.cos(this.radians) * SPIN_RADIUS;
-            this.y = this.center.y + Math.sin(this.radians) * SPIN_RADIUS;
-        }
-        else if(this.type == "homing")
-        {
-            let angle = Math.atan2(player.y-this.y, player.x-this.x);
-            this.velocity.x = Math.cos(angle);
-            this.velocity.y = Math.sin(angle);
-            this.x = this.x + this.velocity.x;
-            this.y = this.y + this.velocity.y;   
-        }
-        else
-        {
-            this.x = this.x + this.velocity.x;
-            this.y = this.y + this.velocity.y;   
-        }
-        this.draw();
-    }
-};
-class Particle{
-    constructor(x,y,r,c,v)
-    {
-        this.x = x;
-        this.y = y;
-        this.radius = r;
-        this.color = c;
-        this.velocity = v;
-        this.alpha = Math.random()*2;
+        gsap.to(this,{alpha:0, duration:0.3, repeat:-1, yoyo:true, ease:"linear"})
+        
+        let Hypotenuse = Math.sqrt(this.velocity.x * this.velocity.x  + this.velocity.y * this.velocity.y);
+        this.velocity.x = this.velocity.x / Hypotenuse * POWERUP_SPEED;
+        this.velocity.y = this.velocity.y / Hypotenuse * POWERUP_SPEED;
     }
     draw()
     {
         c.save();
         c.globalAlpha = this.alpha;
-        c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, 360, false);
-        c.fillStyle = this.color;
-        c.fill();
+        c.translate(
+            this.position.x + this.image.width / 2,
+            this.position.y + this.image.height / 2
+        );
+        c.rotate(this.radians);
+        c.translate(
+            -this.position.x - this.image.width / 2,
+            -this.position.y - this.image.height / 2
+        );
+        c.drawImage(this.image, this.position.x,this. position.y);
         c.restore();
     }
     update()
     {
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+        //this.radians += 0.01;    
         this.draw();
-        this.velocity.x = this.velocity.x * FRICTION;
-        this.velocity.y = this.velocity.y * FRICTION;
-        this.x = this.x + this.velocity.x;
-        this.y = this.y + this.velocity.y;
-        this.alpha -= 0.02;
     }
 };
 
 var player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
-player.draw();
 var projectiles = [];
 var enemies = [];
 var particles = [];
+var powerUps = [];
 
 function Init(){
     player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
@@ -216,14 +85,33 @@ function Init(){
     score = 0;
     scoreEl.innerHTML = 0;
     keyPressSet.clear();
+    //入力
     inputIntervalId = setInterval(()=>{
         if(keyPressSet.has("ArrowRight") || keyPressSet.has("d")) player.velocity.x += PLAYER_SPEED;
         if(keyPressSet.has("ArrowLeft")  || keyPressSet.has("a")) player.velocity.x -= PLAYER_SPEED;
         if(keyPressSet.has("ArrowUp")    || keyPressSet.has("w")) player.velocity.y -= PLAYER_SPEED;
         if(keyPressSet.has("ArrowDown")  || keyPressSet.has("s")) player.velocity.y += PLAYER_SPEED;
+        if(keyPressSet.has("Escape")) gameOver();
     },PLAYER_MOVE_INTERVAL);
+    spawnPowerUp();
 }
 
+function spawnPowerUp()
+{
+    spawnPowerUpId = setInterval(()=>{
+        powerUps.push(new PowerUp(
+            {
+                x:Math.random()*canvas.width,
+                y:Math.random()*canvas.height
+            },
+            {
+                x:Math.random()*POWERUP_SPEED,
+                y:Math.random()*POWERUP_SPEED
+            }
+        ));
+    },5000);
+    
+}
 
 function spawnEnemy()
 {
@@ -255,10 +143,52 @@ function spawnEnemy()
 
 function animate()
 {
+    console.log(powerUps.length);
     animationId = window.requestAnimationFrame(animate);
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.update();
+    for(let index = powerUps.length-1; index >= 0; index--)
+    {
+        let powerUp = powerUps[index];
+        powerUp.update();
+        let dist = Math.hypot(player.x-powerUp.position.x, player.y-powerUp.position.y);
+        //パワーアップ取得
+        if(dist < powerUp.image.height / 2 + player.radius)
+        {
+            powerUps.splice(index,1);
+            player.powerUp = "machinegun";
+            clearTimeout(powerUpId);
+            powerUpId = setTimeout(()=>{
+                player.powerUp = "none";
+                player.color = PLAYER_COLOR;
+            }, 5000);
+        }
+        else
+        {
+            //端に到達したパワーアップを削除
+            if( powerUp.position.x - powerUp.image.height < 0 ||
+                powerUp.position.x - powerUp.image.height > canvas.width ||
+                powerUp.position.y - powerUp.image.height < 0 ||
+                powerUp.position.y - powerUp.image.height > canvas.height)
+            {
+                powerUps.splice(index,1);
+            }
+        }
+    }
+    if(player.powerUp == "machinegun")
+    {
+        player.color = "yellow";
+        let angle = Math.atan2(mouse.position.y - player.y, mouse.position.x - player.x);
+        let velocity = {
+            x:Math.cos(angle)*PROJ_SPEED*2,
+            y:Math.sin(angle)*PROJ_SPEED*2
+        };
+        projectiles.push(new Projectile(
+            player.x,
+            player.y,
+            5, "yellow", velocity));
+    }
     for(let index = particles.length-1; index >= 0; index--)
     {
         let p = particles[index];
@@ -291,14 +221,7 @@ function animate()
         //ゲームオーバー
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
-            window.cancelAnimationFrame(animationId);
-            clearInterval(inputIntervalId);
-            clearInterval(intervalId);
-            modalRestart.style.display = "block";
-            gsap.fromTo("#MODAL_RESTART", 
-            {scale:0.8, opacity:0},
-            {scale:1, opacity:1, ease:"expo"});
-            modalScoreEl.innerHTML = score;
+            gameOver();
         }
         for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
         {
@@ -324,6 +247,20 @@ function animate()
             }
         }
     }
+}
+
+function gameOver()
+{
+    window.cancelAnimationFrame(animationId);
+    clearInterval(inputIntervalId);
+    clearInterval(spawnPowerUpId);
+    clearInterval(powerUpId);
+    clearInterval(intervalId);
+    modalRestart.style.display = "block";
+    gsap.fromTo("#MODAL_RESTART", 
+    {scale:0.8, opacity:0},
+    {scale:1, opacity:1, ease:"expo"});
+    modalScoreEl.innerHTML = score;
 }
 
 canvas.addEventListener("click",(event)=>{
@@ -372,6 +309,12 @@ buttonStart.addEventListener("click",()=>{
             modalStart.style.display = "none";
         }
     });
+});
+
+var mouse = {position:{x:0,y:0}};
+window.addEventListener("mousemove",(event)=>{
+    mouse.position.x = event.clientX;
+    mouse.position.y = event.clientY;
 });
 
 window.addEventListener("keyup",(event)=>{
