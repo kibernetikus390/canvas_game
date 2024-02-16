@@ -17,7 +17,7 @@ const PLAYER_SIZE = 10;
 const PLAYER_SPEED = 0.5;
 const PLAYER_MOVE_INTERVAL = 10;
 const keyPressSet = new Set();
-const POWERUP_SPEED = 1;
+const POWERUP_SPEED = .5;
 var score = 0;
 var animationId;
 var intervalId;
@@ -109,7 +109,7 @@ function spawnPowerUp()
                 y:Math.random()*POWERUP_SPEED
             }
         ));
-    },5000);
+    },10000);
     
 }
 
@@ -143,7 +143,6 @@ function spawnEnemy()
 
 function animate()
 {
-    console.log(powerUps.length);
     animationId = window.requestAnimationFrame(animate);
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -229,24 +228,43 @@ function animate()
             let dist = Math.hypot(p.x-e.x, p.y-e.y)
             if(dist - e.radius - p.radius< HIT_RANGE)
             {
+                //ヒットパーティクルを生成
                 for(let i = 0; i < e.radius*2; i++)
                 {
                     particles.push(new Particle(p.x, p.y, Math.random()*2, e.color, {x:(Math.random()-0.5)*Math.random()*8, y:(Math.random()-0.5)*Math.random()*8}));
                 }
+                //大きい敵は縮小
                 if(e.radius - 10 > 10)
                 {
                     UpdateScore(50);
+                    createScoreLabel({x:p.x, y:p.y}, 50);
                     gsap.to(e,{radius:e.radius - 10});
                     projectiles.splice(pIndex,1);
-                }else
+                }
+                //小さい敵は消滅
+                else
                 {
                     UpdateScore(100);
+                    createScoreLabel({x:p.x, y:p.y}, 100);
                     enemies.splice(eIndex,1);
                     projectiles.splice(pIndex,1);
                 }
             }
         }
     }
+}
+
+function createScoreLabel(position, score)
+{
+    let scoreLabel = document.createElement("label");
+    scoreLabel.innerHTML = score;
+    scoreLabel.className = "ScoreLabel";
+    scoreLabel.style.left = position.x + "px";
+    scoreLabel.style.top = position.y + "px";
+    document.body.appendChild(scoreLabel);
+    gsap.to(scoreLabel, {
+        opacity:0, y:-30, duration:1, onComplete:()=>{scoreLabel.parentNode.removeChild(scoreLabel)}
+    });
 }
 
 function gameOver()

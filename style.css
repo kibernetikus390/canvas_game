@@ -6,7 +6,6 @@ html, html * {
 	box-sizing: border-box;
 }
 body {
-    margin : 0;
     font-family: sans-serif;
     background-color: black;
 }
@@ -40,4 +39,10 @@ body {
     color:white; 
     padding:8px 16px;
     cursor: pointer;
+}
+.ScoreLabel{
+    color: white;
+    position: absolute;
+    user-select: none;
+    font-weight: bold;
 }
