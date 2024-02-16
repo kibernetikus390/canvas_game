@@ -18,6 +18,8 @@ const PLAYER_SPEED = 0.5;
 const PLAYER_MAX_SPEED = 5;
 const PLAYER_MOVE_INTERVAL = 10;
 const FRICTION = 0.99;
+const SPIN_RADIUS = 30;
+const SPIN_SPEED  = 0.1;
 const keyPressSet = new Set();
 var score = 0;
 var animationId;
@@ -112,10 +114,20 @@ class Enemy{
         this.radius = r;
         this.color = c;
         this.velocity = v;
+        this.radians = 0;
+        this.center = {x:x,y:y};
         this.type = "liner";
         if(Math.random() < 0.5)
         {
             this.type = "homing";
+            if(Math.random() < 0.5)
+            {
+                this.type = "spinning";
+                if(Math.random() < 0.5)
+                {
+                    this.type = "spinning_inv";
+                }
+            }
         }
     }
     draw()
@@ -127,6 +139,14 @@ class Enemy{
     }
     update()
     {
+        if(this.type == "spinning" || this.type == "spinning_inv")
+        {
+            this.radians = this.radians + ((this.type == "spinning") ? SPIN_SPEED : -SPIN_SPEED);
+            this.center.x += this.velocity.x;
+            this.center.y += this.velocity.y;
+            this.x = this.center.x + Math.cos(this.radians) * SPIN_RADIUS;
+            this.y = this.center.y + Math.sin(this.radians) * SPIN_RADIUS;
+        }
         if(this.type == "homing")
         {
             let angle = Math.atan2(player.y-this.y, player.x-this.x);
