@@ -302,6 +302,7 @@ function gameOver()
 }
 
 canvas.addEventListener("click",(event)=>{
+    if(!Audio.background.playing()) Audio.background.play();
     if(!gameState.active) return;
     let angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
     let velocity = {

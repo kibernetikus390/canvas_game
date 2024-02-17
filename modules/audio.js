@@ -33,6 +33,12 @@ const Audio = {
         {
             src: "./sounds/Select.wav",
             volume: 0.1
+        }),
+    background: new Howl(
+        {
+            src: "./sounds/Hyper.wav",
+            volume: 0.1,
+            loop: true
         })
 };
 
