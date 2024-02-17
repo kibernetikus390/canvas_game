@@ -9,8 +9,8 @@ const buttonRestart = document.querySelector("#buttonRestart");
 const buttonStart = document.querySelector("#buttonStart");
 const volumeEl = document.querySelector("#VOLUME_ICON");
 const volumeOffEl = document.querySelector("#VOLUME_OFF_ICON");
-const x = canvas.width/2;
-const y = canvas.height/2;
+var x = canvas.width/2;
+var y = canvas.height/2;
 const c = canvas.getContext("2d");
 const PROJ_SPEED = 6;
 const HIT_RANGE = 0.5;
@@ -50,10 +50,13 @@ var backgroundParticles = [];
 function Init(){
     frame = 0;
     gameState.active = true;
+    x = canvas.width/2;
+    y = canvas.height/2;
     player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
     enemies = [];
     projectiles = [];
     particles = [];
+    powerUps = [];
     score = 0;
     scoreEl.innerHTML = 0;
     keyPressSet.clear();
@@ -79,6 +82,7 @@ function Init(){
             ));
         }
     }
+    spawnEnemy();
 }
 
 function spawnPowerUp()
@@ -290,17 +294,21 @@ function createScoreLabel(position, score)
 
 function gameOver()
 {
-    gameState.active = false;
     window.cancelAnimationFrame(animationId);
-    clearInterval(inputIntervalId);
-    clearInterval(spawnPowerUpId);
-    clearInterval(powerUpId);
-    clearInterval(intervalId);
+    resetTimers();
+    gameState.active = false;
     modalRestart.style.display = "block";
     gsap.fromTo("#MODAL_RESTART", 
     {scale:0.8, opacity:0},
     {scale:1, opacity:1, ease:"expo"});
     modalScoreEl.innerHTML = score;
+}
+
+function resetTimers(){
+    clearInterval(inputIntervalId);
+    clearInterval(spawnPowerUpId);
+    clearInterval(powerUpId);
+    clearInterval(intervalId);
 }
 
 canvas.addEventListener("click",(event)=>{
@@ -327,7 +335,6 @@ function UpdateScore(add)
 buttonRestart.addEventListener("click",()=>{
     Init();
     animate();
-    spawnEnemy();
     gsap.to("#MODAL_RESTART",{
         opacity: 0,
         scale:0.8,
@@ -344,7 +351,6 @@ buttonStart.addEventListener("click",()=>{
     if(!Audio.background.playing()) Audio.background.play();
     Init();
     animate();
-    spawnEnemy();
     gsap.to("#MODAL_START",{
         opacity: 0,
         scale:0.8,
@@ -375,6 +381,13 @@ volumeOffEl.addEventListener("click",()=>{
     {
         Audio[key].mute(false);
     }
+});
+
+window.addEventListener("resize",()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    resetTimers();
+    Init();
 });
 
 var mouse = {position:{x:0,y:0}};
