@@ -4,7 +4,7 @@ export {BG_PARTICLE_ALPHA, BackgroundParticle};
 
 class BackgroundParticle
 {
-    constructor({position, radius = 3, color = "blue"})
+    constructor({position, radius = 3, color = "gray"})
     {
         this.position = position;
         this.radius = radius;

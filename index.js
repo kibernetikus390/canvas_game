@@ -24,6 +24,10 @@ var intervalId;
 var inputIntervalId;
 var spawnPowerUpId;
 var powerUpId;
+var frame = 0;
+var gameState = {
+    active: false
+};
 
 export {c, player};
 import Player from "./modules/player.js";
@@ -32,6 +36,7 @@ import Enemy from "./modules/enemy.js";
 import Particle from "./modules/particle.js";
 import { POWERUP_SPEED, PowerUp } from "./modules/powerup.js";
 import {BackgroundParticle, BG_PARTICLE_ALPHA} from "./modules/backgroundParticle.js";
+import Audio from "./modules/audio.js";
 
 var player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
 var projectiles = [];
@@ -41,6 +46,8 @@ var powerUps = [];
 var backgroundParticles = [];
 
 function Init(){
+    frame = 0;
+    gameState.active = true;
     player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
     enemies = [];
     projectiles = [];
@@ -119,6 +126,7 @@ function spawnEnemy()
 
 function animate()
 {
+    frame++;
     animationId = window.requestAnimationFrame(animate);
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -151,6 +159,7 @@ function animate()
         //パワーアップ取得
         if(dist < powerUp.image.height / 2 + player.radius)
         {
+            Audio.mg_shoot.play();
             powerUps.splice(index,1);
             player.powerUp = "machinegun";
             clearTimeout(powerUpId);
@@ -173,16 +182,21 @@ function animate()
     }
     if(player.powerUp == "machinegun")
     {
-        player.color = "yellow";
-        let angle = Math.atan2(mouse.position.y - player.y, mouse.position.x - player.x);
-        let velocity = {
-            x:Math.cos(angle)*PROJ_SPEED*2,
-            y:Math.sin(angle)*PROJ_SPEED*2
-        };
-        projectiles.push(new Projectile(
-            player.x,
-            player.y,
-            5, "yellow", velocity));
+        if(frame % 2 == 0)
+        {
+            player.color = "yellow";
+            let angle = Math.atan2(mouse.position.y - player.y, mouse.position.x - player.x);
+            let velocity = {
+                x:Math.cos(angle)*PROJ_SPEED*2,
+                y:Math.sin(angle)*PROJ_SPEED*2
+            };
+            projectiles.push(new Projectile(
+                player.x,
+                player.y,
+                5, "yellow", velocity));
+        }
+        if(frame % 8 == 0)
+            Audio.shoot.play();
     }
     for(let index = particles.length-1; index >= 0; index--)
     {
@@ -216,6 +230,7 @@ function animate()
         //ゲームオーバー
         if(dist - e.radius - player.radius < HIT_RANGE)
         {
+            Audio.death.play();
             gameOver();
         }
         for(let pIndex = projectiles.length-1; pIndex >= 0; pIndex--)
@@ -232,6 +247,7 @@ function animate()
                 //大きい敵は縮小
                 if(e.radius - 10 > 10)
                 {
+                    Audio.damageTaken.play();
                     UpdateScore(50);
                     createScoreLabel({x:p.x, y:p.y}, 50);
                     gsap.to(e,{radius:e.radius - 10});
@@ -240,6 +256,7 @@ function animate()
                 //小さい敵は消滅
                 else
                 {
+                    Audio.explode.play();
                     UpdateScore(100);
                     createScoreLabel({x:p.x, y:p.y}, 100);
                     enemies.splice(eIndex,1);
@@ -271,6 +288,7 @@ function createScoreLabel(position, score)
 
 function gameOver()
 {
+    gameState.active = false;
     window.cancelAnimationFrame(animationId);
     clearInterval(inputIntervalId);
     clearInterval(spawnPowerUpId);
@@ -284,6 +302,7 @@ function gameOver()
 }
 
 canvas.addEventListener("click",(event)=>{
+    if(!gameState.active) return;
     let angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
     let velocity = {
         x:Math.cos(angle)*PROJ_SPEED,
@@ -293,6 +312,7 @@ canvas.addEventListener("click",(event)=>{
         player.x,
         player.y,
         5, PLAYER_COLOR, velocity));
+    Audio.shoot.play();
 });
 
 function UpdateScore(add)
@@ -314,6 +334,7 @@ buttonRestart.addEventListener("click",()=>{
             modalRestart.style.display = "none";
         }
     });
+    Audio.select.play();
 });
 
 buttonStart.addEventListener("click",()=>{
@@ -329,6 +350,7 @@ buttonStart.addEventListener("click",()=>{
             modalStart.style.display = "none";
         }
     });
+    Audio.select.play();
 });
 
 var mouse = {position:{x:0,y:0}};
