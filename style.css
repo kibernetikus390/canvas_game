@@ -53,7 +53,7 @@ body {
     right: 0px;
     padding: 16px;
 }
-#VOLUME_ICON, #VOLUME_OFF_ICON{
+#VOLUME_ICON, #VOLUME_OFF_ICON, #IMAGE_ICON{
     color: white;
     width: 20px;
     height: 20px;

@@ -9,6 +9,7 @@ const buttonRestart = document.querySelector("#buttonRestart");
 const buttonStart = document.querySelector("#buttonStart");
 const volumeEl = document.querySelector("#VOLUME_ICON");
 const volumeOffEl = document.querySelector("#VOLUME_OFF_ICON");
+const backgroundEl = document.querySelector("#IMAGE_ICON");
 var x = canvas.width/2;
 var y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -27,8 +28,13 @@ var inputIntervalId;
 var spawnPowerUpId;
 var powerUpId;
 var frame = 0;
+var background = true;
 var gameState = {
     active: false
+};
+var previousTouch = {
+    x: Infinity,
+    y: Infinity
 };
 
 export {c, player};
@@ -137,26 +143,30 @@ function animate()
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.update();
-    backgroundParticles.forEach( (p) => {
-        let dist = Math.hypot(player.x - p.position.x, player.y - p.position.y);
-        if(dist < 100)
-        {
-            p.alpha = 0;
-            if(dist > 70)
+    //背景を描画
+    if(background)
+    {
+        backgroundParticles.forEach( (p) => {
+            let dist = Math.hypot(player.x - p.position.x, player.y - p.position.y);
+            if(dist < 100)
             {
-                p.alpha = BG_PARTICLE_ALPHA*5;
+                p.alpha = 0;
+                if(dist > 70)
+                {
+                    p.alpha = BG_PARTICLE_ALPHA*5;
+                }
             }
-        }
-        else if(dist > 100 && p.alpha < BG_PARTICLE_ALPHA)
-        {
-            p.alpha += BG_PARTICLE_ALPHA/10;
-        }
-        else if(dist > 100 && p.alpha > BG_PARTICLE_ALPHA)
-        {
-            p.alpha -= BG_PARTICLE_ALPHA/10;
-        }
-        p.draw();
-    });
+            else if(dist > 100 && p.alpha < BG_PARTICLE_ALPHA)
+            {
+                p.alpha += BG_PARTICLE_ALPHA/10;
+            }
+            else if(dist > 100 && p.alpha > BG_PARTICLE_ALPHA)
+            {
+                p.alpha -= BG_PARTICLE_ALPHA/10;
+            }
+            p.draw();
+        });
+    }
     for(let index = powerUps.length-1; index >= 0; index--)
     {
         let powerUp = powerUps[index];
@@ -268,10 +278,13 @@ function animate()
                     enemies.splice(eIndex,1);
                     projectiles.splice(pIndex,1);
                     
-                    backgroundParticles.forEach(p=>{
-                        gsap.set(p,{color:"white", alpha:1});
-                        gsap.to( p,{color:e.color, alpha:BG_PARTICLE_ALPHA});
-                    });
+                    if(background)
+                    {
+                        backgroundParticles.forEach(p=>{
+                            gsap.set(p,{color:"white", alpha:1});
+                            gsap.to( p,{color:e.color, alpha:BG_PARTICLE_ALPHA});
+                        });
+                    }
                 }
             }
         }
@@ -366,7 +379,7 @@ buttonStart.addEventListener("click",()=>{
 volumeEl.addEventListener("click",()=>{
     Audio.background.pause();
     volumeEl.style.display = "none";
-    volumeOffEl.style.display = "block";
+    volumeOffEl.style.display = "inline";
     for(let key in Audio)
     {
         Audio[key].mute(true);
@@ -376,11 +389,15 @@ volumeEl.addEventListener("click",()=>{
 volumeOffEl.addEventListener("click",()=>{
     if(!Audio.background.playing()) Audio.background.play();
     volumeOffEl.style.display = "none";
-    volumeEl.style.display = "block";
+    volumeEl.style.display = "inline";
     for(let key in Audio)
     {
         Audio[key].mute(false);
     }
+});
+
+backgroundEl.addEventListener("click",()=>{
+    background = !background;
 });
 
 window.addEventListener("resize",()=>{
@@ -409,6 +426,27 @@ window.addEventListener("keydown",(event)=>{
 window.addEventListener("touchmove",(event)=>{
     mouse.position.x = event.touches[0].clientX;
     mouse.position.y = event.touches[0].clientY;
+
+    let newVel = {
+        x: event.touches[0].clientX - previousTouch.x,
+        y: event.touches[0].clientY - previousTouch.y
+    };
+    
+    let Hypotenuse = Math.sqrt(newVel.x*newVel.x + newVel.y*newVel.y);
+    newVel = {
+        x: newVel.x / Hypotenuse * PLAYER_SPEED,
+        y: newVel.y / Hypotenuse * PLAYER_SPEED
+    };
+
+    player.velocity = {
+        x: player.velocity.x + newVel.x,
+        y: player.velocity.y + newVel.y
+    };
+
+    previousTouch = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY
+    };
 });
 
 document.addEventListener("visibilitychange", ()=>{
@@ -419,7 +457,7 @@ document.addEventListener("visibilitychange", ()=>{
     }
     else
     {
-        enemySpawnId();
-        spawnPowerUpId();
+        spawnEnemy();
+        spawnPowerUp();
     }
 })
