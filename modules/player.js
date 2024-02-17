@@ -56,6 +56,6 @@ export default class Player{
         }
 
         //描画
-        this.draw();
+        //this.draw();
     }
 };

@@ -17,6 +17,7 @@ const PLAYER_SIZE = 10;
 const PLAYER_SPEED = 0.5;
 const PLAYER_MOVE_INTERVAL = 10;
 const keyPressSet = new Set();
+const BG_PARTICLE_SPAN = 30;
 var score = 0;
 var animationId;
 var intervalId;
@@ -30,12 +31,14 @@ import Projectile from "./modules/projectile.js";
 import Enemy from "./modules/enemy.js";
 import Particle from "./modules/particle.js";
 import { POWERUP_SPEED, PowerUp } from "./modules/powerup.js";
+import {BackgroundParticle, BG_PARTICLE_ALPHA} from "./modules/backgroundParticle.js";
 
 var player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
 var projectiles = [];
 var enemies = [];
 var particles = [];
 var powerUps = [];
+var backgroundParticles = [];
 
 function Init(){
     player = new Player(x,y,PLAYER_SIZE,PLAYER_COLOR);
@@ -54,6 +57,19 @@ function Init(){
         if(keyPressSet.has("Escape")) gameOver();
     },PLAYER_MOVE_INTERVAL);
     spawnPowerUp();
+    backgroundParticles = [];
+    for(let x = 0; x < canvas.width; x+=BG_PARTICLE_SPAN)
+    {
+        for(let y = 0; y < canvas.height; y+=BG_PARTICLE_SPAN)
+        {
+            backgroundParticles.push(new BackgroundParticle(
+                {
+                    position: {x: x, y: y}, 
+                    radius: 5
+                }
+            ));
+        }
+    }
 }
 
 function spawnPowerUp()
@@ -107,6 +123,26 @@ function animate()
     c.fillStyle = `rgba(0,0,0,0.1)`;
     c.fillRect(0, 0, canvas.width, canvas.height);
     player.update();
+    backgroundParticles.forEach( (p) => {
+        let dist = Math.hypot(player.x - p.position.x, player.y - p.position.y);
+        if(dist < 100)
+        {
+            p.alpha = 0;
+            if(dist > 70)
+            {
+                p.alpha = BG_PARTICLE_ALPHA*5;
+            }
+        }
+        else if(dist > 100 && p.alpha < BG_PARTICLE_ALPHA)
+        {
+            p.alpha += BG_PARTICLE_ALPHA/10;
+        }
+        else if(dist > 100 && p.alpha > BG_PARTICLE_ALPHA)
+        {
+            p.alpha -= BG_PARTICLE_ALPHA/10;
+        }
+        p.draw();
+    });
     for(let index = powerUps.length-1; index >= 0; index--)
     {
         let powerUp = powerUps[index];
@@ -208,10 +244,16 @@ function animate()
                     createScoreLabel({x:p.x, y:p.y}, 100);
                     enemies.splice(eIndex,1);
                     projectiles.splice(pIndex,1);
+                    
+                    backgroundParticles.forEach(p=>{
+                        gsap.set(p,{color:"white", alpha:1});
+                        gsap.to( p,{color:e.color, alpha:BG_PARTICLE_ALPHA});
+                    });
                 }
             }
         }
     }
+    player.draw();
 }
 
 function createScoreLabel(position, score)
