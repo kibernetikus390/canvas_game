@@ -22,7 +22,7 @@ const keyPressSet = new Set();
 const BG_PARTICLE_SPAN = 30;
 var score = 0;
 var animationId;
-var intervalId;
+var enemySpawnId;
 var inputIntervalId;
 var spawnPowerUpId;
 var powerUpId;
@@ -104,7 +104,7 @@ function spawnPowerUp()
 
 function spawnEnemy()
 {
-    intervalId = setInterval(()=>{
+    enemySpawnId = setInterval(()=>{
         let radius = Math.random() * (30 - 4) + 4;
         
         let x,y;
@@ -308,7 +308,7 @@ function resetTimers(){
     clearInterval(inputIntervalId);
     clearInterval(spawnPowerUpId);
     clearInterval(powerUpId);
-    clearInterval(intervalId);
+    clearInterval(enemySpawnId);
 }
 
 canvas.addEventListener("click",(event)=>{
@@ -410,3 +410,16 @@ window.addEventListener("touchmove",(event)=>{
     mouse.position.x = event.touches[0].clientX;
     mouse.position.y = event.touches[0].clientY;
 });
+
+document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden)
+    {
+        clearInterval(enemySpawnId);
+        clearInterval(spawnPowerUpId);
+    }
+    else
+    {
+        enemySpawnId();
+        spawnPowerUpId();
+    }
+})
