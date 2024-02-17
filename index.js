@@ -402,3 +402,11 @@ window.addEventListener("keyup",(event)=>{
 window.addEventListener("keydown",(event)=>{
     keyPressSet.add(event.key);
 });
+
+// window.addEventListener("touchstart",(event)=>{
+//     console.log(event.touches[0].clientX);
+// });
+window.addEventListener("touchmove",(event)=>{
+    mouse.position.x = event.touches[0].clientX;
+    mouse.position.y = event.touches[0].clientY;
+});

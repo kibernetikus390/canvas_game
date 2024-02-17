@@ -2,7 +2,8 @@ const Audio = {
     shoot: new Howl(
         {
             src: "./sounds/Basic_shoot_noise.wav",
-            volume: 0.1
+            volume: 0.1,
+            html5: true
         }),
     mg_shoot: new Howl(
         {
