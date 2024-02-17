@@ -7,6 +7,8 @@ const modalStart = document.querySelector("#MODAL_START");
 const modalScoreEl = document.querySelector("#modalScore");
 const buttonRestart = document.querySelector("#buttonRestart");
 const buttonStart = document.querySelector("#buttonStart");
+const volumeEl = document.querySelector("#VOLUME_ICON");
+const volumeOffEl = document.querySelector("#VOLUME_OFF_ICON");
 const x = canvas.width/2;
 const y = canvas.height/2;
 const c = canvas.getContext("2d");
@@ -302,7 +304,7 @@ function gameOver()
 }
 
 canvas.addEventListener("click",(event)=>{
-    if(!Audio.background.playing()) Audio.background.play();
+    //if(!Audio.background.playing()) Audio.background.play();
     if(!gameState.active) return;
     let angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
     let velocity = {
@@ -339,6 +341,7 @@ buttonRestart.addEventListener("click",()=>{
 });
 
 buttonStart.addEventListener("click",()=>{
+    if(!Audio.background.playing()) Audio.background.play();
     Init();
     animate();
     spawnEnemy();
@@ -352,6 +355,26 @@ buttonStart.addEventListener("click",()=>{
         }
     });
     Audio.select.play();
+});
+
+volumeEl.addEventListener("click",()=>{
+    Audio.background.pause();
+    volumeEl.style.display = "none";
+    volumeOffEl.style.display = "block";
+    for(let key in Audio)
+    {
+        Audio[key].mute(true);
+    }
+});
+
+volumeOffEl.addEventListener("click",()=>{
+    if(!Audio.background.playing()) Audio.background.play();
+    volumeOffEl.style.display = "none";
+    volumeEl.style.display = "block";
+    for(let key in Audio)
+    {
+        Audio[key].mute(false);
+    }
 });
 
 var mouse = {position:{x:0,y:0}};

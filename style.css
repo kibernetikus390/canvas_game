@@ -46,3 +46,18 @@ body {
     user-select: none;
     font-weight: bold;
 }
+#VOLUME_DIV{
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 16px;
+}
+#VOLUME_ICON, #VOLUME_OFF_ICON{
+    color: white;
+    width: 20px;
+    height: 20px;
+}
+#VOLUME_OFF_ICON
+{
+    display: none;
+}
